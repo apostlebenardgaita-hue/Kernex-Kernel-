@@ -1,0 +1,183 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isNonEmptyStr(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidKeyword(val) {
+      return val is string && val.size() >= 1 && val.size() <= 24 && val.matches('^[a-zA-Z_][a-zA-Z0-9_]*$');
+    }
+
+    function isValidLinuxProfile(data, userId) {
+      return data.userId == userId &&
+             isNonEmptyStr(data.name, 1, 60) &&
+             data.baseDistro in ['Arch-Minimal', 'Debian-Sid', 'Alpine-musl', 'Void-runit', 'Gentoo-Source'] &&
+             data.architecture in ['x86_64', 'aarch64', 'riscv64'] &&
+             data.initSystem in ['systemd', 'OpenRC', 'runit', 's6'] &&
+             data.filesystem in ['btrfs', 'ext4', 'zfs', 'f2fs'] &&
+             data.kernelVersion in ['6.12 LTS', '6.14 Mainline', '6.12-rt Realtime', '6.13-zen'] &&
+             data.scheduler in ['EEVDF', 'BORE', 'MuQSS'] &&
+             data.preemption in ['PREEMPT_DYNAMIC', 'PREEMPT_RT', 'PREEMPT_VOLUNTARY', 'PREEMPT_NONE'] &&
+             data.compiler in ['Clang ThinLTO', 'GCC 14 -O2', 'GCC 14 -O3 Native'] &&
+             data.kernelFlags is list && data.kernelFlags.size() <= 40 &&
+             (data.kernelFlags.size() == 0 || data.kernelFlags[0] is string) &&
+             data.desktopEnv in ['Hyprland', 'Sway', 'KDE Plasma 6', 'GNOME 47', 'XFCE 4.20', 'Niri'] &&
+             data.statusBar in ['Waybar', 'Polybar', 'AGS', 'Native Panel'] &&
+             data.barPosition in ['Top', 'Bottom'] &&
+             data.terminal in ['Ghostty', 'Alacritty', 'Kitty', 'Foot'] &&
+             data.launcher in ['Rofi', 'Wofi', 'Fuzzel', 'Vicinae'] &&
+             data.accentPreset in ['Cyber Cyan', 'Matrix Mint', 'Solar Amber', 'Crimson Coral', 'Violet Pulse'] &&
+             data.windowGaps is int && data.windowGaps >= 0 && data.windowGaps <= 32 &&
+             data.borderWidth is int && data.borderWidth >= 0 && data.borderWidth <= 8 &&
+             data.cornerRadius is int && data.cornerRadius >= 0 && data.cornerRadius <= 24 &&
+             data.blurStrength is int && data.blurStrength >= 0 && data.blurStrength <= 12 &&
+             data.windowOpacity is number && data.windowOpacity >= 0.5 && data.windowOpacity <= 1.0 &&
+             data.animationStyle in ['Snappy Spring', 'Fluid Bezier', 'Instant'] &&
+             data.keybindStyle in ['Vim-like', 'Standard', 'macOS-inspired'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCustomLanguage(data, userId) {
+      return data.userId == userId &&
+             isNonEmptyStr(data.name, 1, 40) &&
+             isNonEmptyStr(data.fileExtension, 2, 10) &&
+             data.commentPrefix in ['//', '#', '--'] &&
+             isValidKeyword(data.kwVar) &&
+             isValidKeyword(data.kwPrint) &&
+             isValidKeyword(data.kwFunc) &&
+             isValidKeyword(data.kwIf) &&
+             isValidKeyword(data.kwElse) &&
+             isValidKeyword(data.kwLoop) &&
+             isValidKeyword(data.kwReturn) &&
+             isValidKeyword(data.kwTrue) &&
+             isValidKeyword(data.kwFalse) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCodeScript(data, userId) {
+      return data.userId == userId &&
+             isNonEmptyStr(data.title, 1, 80) &&
+             isNonEmptyStr(data.languageId, 1, 128) &&
+             data.sourceCode is string && data.sourceCode.size() <= 50000 &&
+             data.lastOutput is string && data.lastOutput.size() <= 20000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/linuxProfiles/{profileId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(profileId);
+      allow create: if isOwner(userId) &&
+                       isValidId(profileId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'name', 'baseDistro', 'architecture', 'initSystem', 'filesystem',
+                         'kernelVersion', 'scheduler', 'preemption', 'compiler', 'kernelFlags',
+                         'desktopEnv', 'statusBar', 'barPosition', 'terminal', 'launcher',
+                         'accentPreset', 'windowGaps', 'borderWidth', 'cornerRadius', 'blurStrength',
+                         'windowOpacity', 'animationStyle', 'keybindStyle', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'name', 'baseDistro', 'architecture', 'initSystem', 'filesystem',
+                         'kernelVersion', 'scheduler', 'preemption', 'compiler', 'kernelFlags',
+                         'desktopEnv', 'statusBar', 'barPosition', 'terminal', 'launcher',
+                         'accentPreset', 'windowGaps', 'borderWidth', 'cornerRadius', 'blurStrength',
+                         'windowOpacity', 'animationStyle', 'keybindStyle', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidLinuxProfile(incoming(), userId);
+      allow update: if isOwner(userId) &&
+                       isValidId(profileId) &&
+                       isValidLinuxProfile(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'name', 'baseDistro', 'architecture', 'initSystem', 'filesystem',
+                         'kernelVersion', 'scheduler', 'preemption', 'compiler', 'kernelFlags',
+                         'desktopEnv', 'statusBar', 'barPosition', 'terminal', 'launcher',
+                         'accentPreset', 'windowGaps', 'borderWidth', 'cornerRadius', 'blurStrength',
+                         'windowOpacity', 'animationStyle', 'keybindStyle', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(profileId);
+    }
+
+    match /users/{userId}/languages/{languageId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(languageId);
+      allow create: if isOwner(userId) &&
+                       isValidId(languageId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'name', 'fileExtension', 'commentPrefix',
+                         'kwVar', 'kwPrint', 'kwFunc', 'kwIf', 'kwElse',
+                         'kwLoop', 'kwReturn', 'kwTrue', 'kwFalse', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'name', 'fileExtension', 'commentPrefix',
+                         'kwVar', 'kwPrint', 'kwFunc', 'kwIf', 'kwElse',
+                         'kwLoop', 'kwReturn', 'kwTrue', 'kwFalse', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidCustomLanguage(incoming(), userId);
+      allow update: if isOwner(userId) &&
+                       isValidId(languageId) &&
+                       isValidCustomLanguage(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'name', 'fileExtension', 'commentPrefix',
+                         'kwVar', 'kwPrint', 'kwFunc', 'kwIf', 'kwElse',
+                         'kwLoop', 'kwReturn', 'kwTrue', 'kwFalse', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(languageId);
+    }
+
+    match /users/{userId}/scripts/{scriptId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(scriptId);
+      allow create: if isOwner(userId) &&
+                       isValidId(scriptId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'title', 'languageId', 'sourceCode', 'lastOutput', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'title', 'languageId', 'sourceCode', 'lastOutput', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidCodeScript(incoming(), userId);
+      allow update: if isOwner(userId) &&
+                       isValidId(scriptId) &&
+                       isValidCodeScript(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'title', 'languageId', 'sourceCode', 'lastOutput', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(scriptId);
+    }
+  }
+}

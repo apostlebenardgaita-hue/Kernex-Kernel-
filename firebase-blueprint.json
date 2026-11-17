@@ -1,0 +1,308 @@
+{
+  "entities": {
+    "LinuxProfile": {
+      "title": "LinuxProfile",
+      "description": "Custom Linux distribution, kernel configuration, and desktop environment settings owned by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the profile owner."
+        },
+        "name": {
+          "type": "string",
+          "description": "Custom Linux distro or build profile name."
+        },
+        "baseDistro": {
+          "type": "string",
+          "enum": ["Arch-Minimal", "Debian-Sid", "Alpine-musl", "Void-runit", "Gentoo-Source"],
+          "description": "Upstream package/userland base."
+        },
+        "architecture": {
+          "type": "string",
+          "enum": ["x86_64", "aarch64", "riscv64"],
+          "description": "Target CPU architecture."
+        },
+        "initSystem": {
+          "type": "string",
+          "enum": ["systemd", "OpenRC", "runit", "s6"],
+          "description": "Init and service supervisor."
+        },
+        "filesystem": {
+          "type": "string",
+          "enum": ["btrfs", "ext4", "zfs", "f2fs"],
+          "description": "Root filesystem type."
+        },
+        "kernelVersion": {
+          "type": "string",
+          "enum": ["6.12 LTS", "6.14 Mainline", "6.12-rt Realtime", "6.13-zen"],
+          "description": "Selected Linux kernel branch."
+        },
+        "scheduler": {
+          "type": "string",
+          "enum": ["EEVDF", "BORE", "MuQSS"],
+          "description": "Process CPU scheduler."
+        },
+        "preemption": {
+          "type": "string",
+          "enum": ["PREEMPT_DYNAMIC", "PREEMPT_RT", "PREEMPT_VOLUNTARY", "PREEMPT_NONE"],
+          "description": "Kernel preemption mode."
+        },
+        "compiler": {
+          "type": "string",
+          "enum": ["Clang ThinLTO", "GCC 14 -O2", "GCC 14 -O3 Native"],
+          "description": "Kernel build toolchain."
+        },
+        "kernelFlags": {
+          "type": "array",
+          "description": "Enabled kernel CONFIG_* symbols (bounded to 40 flags)."
+        },
+        "desktopEnv": {
+          "type": "string",
+          "enum": ["Hyprland", "Sway", "KDE Plasma 6", "GNOME 47", "XFCE 4.20", "Niri"],
+          "description": "Desktop environment or Wayland compositor."
+        },
+        "statusBar": {
+          "type": "string",
+          "enum": ["Waybar", "Polybar", "AGS", "Native Panel"],
+          "description": "Desktop status bar."
+        },
+        "barPosition": {
+          "type": "string",
+          "enum": ["Top", "Bottom"],
+          "description": "Status bar placement."
+        },
+        "terminal": {
+          "type": "string",
+          "enum": ["Ghostty", "Alacritty", "Kitty", "Foot"],
+          "description": "Default terminal emulator."
+        },
+        "launcher": {
+          "type": "string",
+          "enum": ["Rofi", "Wofi", "Fuzzel", "Vicinae"],
+          "description": "Application launcher."
+        },
+        "accentPreset": {
+          "type": "string",
+          "enum": ["Cyber Cyan", "Matrix Mint", "Solar Amber", "Crimson Coral", "Violet Pulse"],
+          "description": "Desktop accent color theme."
+        },
+        "windowGaps": {
+          "type": "integer",
+          "description": "Window gaps in pixels (0..32)."
+        },
+        "borderWidth": {
+          "type": "integer",
+          "description": "Window border width in pixels (0..8)."
+        },
+        "cornerRadius": {
+          "type": "integer",
+          "description": "Window corner rounding in pixels (0..24)."
+        },
+        "blurStrength": {
+          "type": "integer",
+          "description": "Compositor blur strength (0..12)."
+        },
+        "windowOpacity": {
+          "type": "number",
+          "description": "Inactive window opacity (0.5..1.0)."
+        },
+        "animationStyle": {
+          "type": "string",
+          "enum": ["Snappy Spring", "Fluid Bezier", "Instant"],
+          "description": "Window animation curve."
+        },
+        "keybindStyle": {
+          "type": "string",
+          "enum": ["Vim-like", "Standard", "macOS-inspired"],
+          "description": "Workspace keybinding layout."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp (clients must submit FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp (clients must submit FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "baseDistro",
+        "architecture",
+        "initSystem",
+        "filesystem",
+        "kernelVersion",
+        "scheduler",
+        "preemption",
+        "compiler",
+        "kernelFlags",
+        "desktopEnv",
+        "statusBar",
+        "barPosition",
+        "terminal",
+        "launcher",
+        "accentPreset",
+        "windowGaps",
+        "borderWidth",
+        "cornerRadius",
+        "blurStrength",
+        "windowOpacity",
+        "animationStyle",
+        "keybindStyle",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomLanguage": {
+      "title": "CustomLanguage",
+      "description": "User-designed programming language syntax and keyword mappings.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the language author."
+        },
+        "name": {
+          "type": "string",
+          "description": "Programming language name."
+        },
+        "fileExtension": {
+          "type": "string",
+          "description": "File extension such as .kx or .ez."
+        },
+        "commentPrefix": {
+          "type": "string",
+          "enum": ["//", "#", "--"],
+          "description": "Single-line comment token."
+        },
+        "kwVar": {
+          "type": "string",
+          "description": "Keyword for variable declaration."
+        },
+        "kwPrint": {
+          "type": "string",
+          "description": "Keyword for console output."
+        },
+        "kwFunc": {
+          "type": "string",
+          "description": "Keyword for function definition."
+        },
+        "kwIf": {
+          "type": "string",
+          "description": "Keyword for conditional branch."
+        },
+        "kwElse": {
+          "type": "string",
+          "description": "Keyword for else branch."
+        },
+        "kwLoop": {
+          "type": "string",
+          "description": "Keyword for loop construct."
+        },
+        "kwReturn": {
+          "type": "string",
+          "description": "Keyword for function return."
+        },
+        "kwTrue": {
+          "type": "string",
+          "description": "Keyword for boolean true literal."
+        },
+        "kwFalse": {
+          "type": "string",
+          "description": "Keyword for boolean false literal."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp (clients must submit FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp (clients must submit FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "fileExtension",
+        "commentPrefix",
+        "kwVar",
+        "kwPrint",
+        "kwFunc",
+        "kwIf",
+        "kwElse",
+        "kwLoop",
+        "kwReturn",
+        "kwTrue",
+        "kwFalse",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CodeScript": {
+      "title": "CodeScript",
+      "description": "Saved source code script written in a user's custom language.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the script author."
+        },
+        "title": {
+          "type": "string",
+          "description": "Script title."
+        },
+        "languageId": {
+          "type": "string",
+          "description": "Associated custom language ID."
+        },
+        "sourceCode": {
+          "type": "string",
+          "description": "Source code text."
+        },
+        "lastOutput": {
+          "type": "string",
+          "description": "Last execution output."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp (clients must submit FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp (clients must submit FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "languageId",
+        "sourceCode",
+        "lastOutput",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/linuxProfiles/{profileId}": {
+      "schema": { "$ref": "#/entities/LinuxProfile" },
+      "description": "User-owned custom Linux distribution, kernel, and desktop environment profiles."
+    },
+    "/users/{userId}/languages/{languageId}": {
+      "schema": { "$ref": "#/entities/CustomLanguage" },
+      "description": "User-owned custom programming language keyword definitions."
+    },
+    "/users/{userId}/scripts/{scriptId}": {
+      "schema": { "$ref": "#/entities/CodeScript" },
+      "description": "User-owned source code scripts written in their custom programming language."
+    }
+  }
+}
